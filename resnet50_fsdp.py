@@ -100,22 +100,37 @@ if __name__ == '__main__':
     criterion = nn.CrossEntropyLoss()
     iter_count = 0
     sharded_module.train()
-    with profile(activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA]) as prof:
-        with record_function("test_model"):	
-            count =0
-            for data, target in tqdm(train_loader):
+    if(args.profile == "true"):
+        with profile(activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA]) as prof:
+            with record_function("test_model"):	
+                count =0
+                for data, target in tqdm(train_loader):
 
-                data = data.cuda()
-                target = target.cuda()
-                output = sharded_module(data)
+                    data = data.cuda()
+                    target = target.cuda()
+                    output = sharded_module(data)
 
-                loss = criterion(output, target)
+                    loss = criterion(output, target)
 
-                loss.backward()
-                optimizer.step()
-                optimizer.zero_grad()
-                count += 1
-                if(count ==5):
-                    break
-    if(rank == 0):		
-        prof.export_chrome_trace("trace.json")                       
+                    loss.backward()
+                    optimizer.step()
+                    optimizer.zero_grad()
+                    count += 1
+                    if(count ==5):
+                        break
+        if(rank == 0):		
+            prof.export_chrome_trace("trace.json")                       
+    else:
+        count =0
+        for data, target in tqdm(train_loader):
+
+            data = data.cuda()
+            target = target.cuda()
+            output = sharded_module(data)
+
+            loss = criterion(output, target)
+
+            loss.backward()
+            optimizer.step()
+            optimizer.zero_grad()
+            count += 1
