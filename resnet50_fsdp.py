@@ -92,7 +92,7 @@ if __name__ == '__main__':
     fsdp_params = dict(wrapper_cls=FSDP, flatten_parameters=True, reshard_after_forward=False, bucket_cap_mb=50)
     fsdp_params_no_cls = dict( flatten_parameters=True, reshard_after_forward=False, bucket_cap_mb=50)
 
-    with enable_wrap(**fsdp_params):
+    with enable_wrap(**fsdp_params_no_cls):
         sharded_module = auto_wrap(model)
         sharded_module = FSDP(sharded_module, **fsdp_params_no_cls)
         sharded_module._lazy_init()
