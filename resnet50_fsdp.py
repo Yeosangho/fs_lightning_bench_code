@@ -88,7 +88,7 @@ if __name__ == '__main__':
     model.train()
 
     model_parameter_names = {}
-    fsdp_params = dict(wrapper_cls=FSDP, flatten_parameters=True, reshard_after_forward=True, bucket_cap_mb=1)
+    fsdp_params = dict(wrapper_cls=FSDP, flatten_parameters=True, reshard_after_forward=False, bucket_cap_mb=100)
     #fsdp_params_no_cls = dict( flatten_parameters=True, reshard_after_forward=True, bucket_cap_mb=1)
 
     with enable_wrap(**fsdp_params):
