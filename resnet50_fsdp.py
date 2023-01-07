@@ -89,8 +89,8 @@ if __name__ == '__main__':
     model.train()
 
     model_parameter_names = {}
-    fsdp_params = dict(wrapper_cls=FSDP, flatten_parameters=True, reshard_after_forward=True, bucket_cap_mb=20)
-    fsdp_params_no_cls = dict( flatten_parameters=True, reshard_after_forward=True, bucket_cap_mb=29)
+    fsdp_params = dict(wrapper_cls=FSDP, flatten_parameters=True, reshard_after_forward=False, bucket_cap_mb=20)
+    fsdp_params_no_cls = dict( flatten_parameters=True, reshard_after_forward=False, bucket_cap_mb=20)
 
     with enable_wrap(**fsdp_params_no_cls):
         sharded_module = auto_wrap(model)
