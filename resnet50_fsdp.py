@@ -17,8 +17,8 @@ from torchvision.models.resnet import BasicBlock, Bottleneck, ResNet
 from transformers import GPT2LMHeadModel,  GPT2Tokenizer, GPT2Config, GPT2LMHeadModel
 from fairscale.optim.oss import OSS
 
-#from auto_wrap_custom import wrap, enable_wrap, auto_wrap
-from fairscale.nn.wrap import wrap, enable_wrap, auto_wrap
+from auto_wrap_custom import wrap, enable_wrap, auto_wrap
+#from fairscale.nn.wrap import wrap, enable_wrap, auto_wrap
 from fairscale.nn.data_parallel import FullyShardedDataParallel as FSDP
 from fairscale.nn.data_parallel import ShardedDataParallel as SDP
 
@@ -89,11 +89,13 @@ if __name__ == '__main__':
     model.train()
 
     model_parameter_names = {}
-    fsdp_params = dict(wrapper_cls=FSDP, flatten_parameters=True, reshard_after_forward=False, bucket_cap_mb=100)
-    #fsdp_params_no_cls = dict( flatten_parameters=True, reshard_after_forward=True, bucket_cap_mb=1)
+    fsdp_params = dict(wrapper_cls=FSDP, flatten_parameters=True, reshard_after_forward=False, bucket_cap_mb=50)
+    fsdp_params_no_cls = dict( flatten_parameters=True, reshard_after_forward=False, bucket_cap_mb=50)
 
     with enable_wrap(**fsdp_params):
-      sharded_module = auto_wrap(model)
+        sharded_module = auto_wrap(model)
+        sharded_module = FSDP(sharded_module, **fsdp_params_no_cls)
+        sharded_module._lazy_init()
     optimizer = torch.optim.Adam(sharded_module.parameters(), lr=0.001, betas=(0.9, 0.999), eps=1e-08, weight_decay=0, amsgrad=False)
     criterion = nn.CrossEntropyLoss()
     iter_count = 0
