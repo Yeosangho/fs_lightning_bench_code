@@ -63,6 +63,7 @@ if __name__ == '__main__':
     parser.add_argument("--master_addr", type=str, default="210.107.197.218")
     parser.add_argument("--master_port", type=str, default="30002")
     parser.add_argument("--profile", type=str, default="false")
+    parser.add_argument("--batch_size", type=int, default=128)
     args = parser.parse_args()
 
     world_size = int(get_args_or_env("WORLD_SIZE", "world_size", args))
@@ -83,7 +84,7 @@ if __name__ == '__main__':
             root='../shardscheduler/cifar10-data', train=True, download=False, transform=transforms.ToTensor())
     train_sampler = DistributedSampler(dataset=train_dataset, shuffle=False)
     train_loader = torch.utils.data.DataLoader(
-            train_dataset , batch_size=32, sampler=train_sampler, shuffle=False, num_workers=2)
+            train_dataset , batch_size=args.batch_size, sampler=train_sampler, shuffle=False, num_workers=2)
     model = ResNet(Bottleneck,  [3, 4, 6, 3]) #it means "resnet50 model"
     model.cuda()
     model.train()
