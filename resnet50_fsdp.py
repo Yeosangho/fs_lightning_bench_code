@@ -7,6 +7,7 @@ import torch.nn as nn
 import torch.distributed as dist 
 from torch.utils.data import Dataset, DataLoader, random_split, RandomSampler, SequentialSampler
 from torch.utils.data.distributed import DistributedSampler
+from torch.profiler import profile, record_function, ProfilerActivity
 
 from torchvision import datasets
 from torchvision import transforms
@@ -97,14 +98,22 @@ if __name__ == '__main__':
     criterion = nn.CrossEntropyLoss()
     iter_count = 0
     sharded_module.train()
-    for data, target in tqdm(train_loader):
+    with profile(activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA]) as prof:
+        with record_function("test_model"):	
+            count =0
+            for data, target in tqdm(train_loader):
 
-        data = data.cuda()
-        target = target.cuda()
-        output = sharded_module(data)
+                data = data.cuda()
+                target = target.cuda()
+                output = sharded_module(data)
 
-        loss = criterion(output, target)
+                loss = criterion(output, target)
 
-        loss.backward()
-        optimizer.step()
-        optimizer.zero_grad()                       
+                loss.backward()
+                optimizer.step()
+                optimizer.zero_grad()
+                count += 1
+                if(count ==5):
+                    break
+    if(rank == 0):		
+        prof.export_chrome_trace("trace.json")                       
